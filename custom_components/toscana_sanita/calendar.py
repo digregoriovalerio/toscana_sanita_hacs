@@ -1,5 +1,7 @@
-"""Toscana Sanità Binary Sensor definitions."""
+"""Toscana Sanità Binary Sensor definitions."""  # noqa: A005
+
 from datetime import datetime, timedelta
+from typing import cast
 
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -42,15 +44,16 @@ class ToscanaSanitaCalendarEntity(CoordinatorEntity, CalendarEntity):
     @property
     def event(self) -> CalendarEvent | None:
         """Return the next upcoming event."""
-        events = self.coordinator.data or []
+        events = cast(list[CalendarEvent], self.coordinator.data or [])
         now = datetime.now().astimezone()
         future_events = [e for e in events if e.start >= now]
-        return min(future_events, key=lambda e: e.start) if future_events else None
+        return (
+            min(future_events, key=lambda e: e.start) if future_events else None
+        )
 
-    async def async_get_events(self, hass, start_date, end_date) -> list[CalendarEvent]:
+    async def async_get_events(
+        self, hass, start_date, end_date
+    ) -> list[CalendarEvent]:
         """Return calendar events within datetime range."""
-        events = self.coordinator.data or []
-        return [
-            e for e in events 
-            if e.start < end_date and e.end > start_date
-        ]
+        events = cast(list[CalendarEvent], self.coordinator.data or [])
+        return [e for e in events if e.start < end_date and e.end > start_date]

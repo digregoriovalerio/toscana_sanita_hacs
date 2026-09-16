@@ -19,12 +19,19 @@ class ZeroCodeClient:
     Maintains session state and handles XSRF tokens automatically.
     """
 
-    def __init__(self, base_url: str = "https://zerocode.sanita.toscana.it", timeout: float = 15.0):
+    def __init__(
+        self,
+        base_url: str = "https://zerocode.sanita.toscana.it",
+        timeout: float = 15.0,
+    ):
         referer = base_url.rstrip("/") + "/"
         self.base_url = referer + "api"
         self.client = httpx.Client(
             base_url=self.base_url,
-            headers={"Accept": "application/json, text/plain, */*", "Referer": referer},
+            headers={
+                "Accept": "application/json, text/plain, */*",
+                "Referer": referer,
+            },
             timeout=timeout,
         )
 
@@ -45,13 +52,16 @@ class ZeroCodeClient:
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as e:
-            raise ZeroCodeAPIError(f"HTTP Error {e.response.status_code}: {e.response.text}") from e
+            raise ZeroCodeAPIError(
+                f"HTTP Error {e.response.status_code}: {e.response.text}"
+            ) from e
         except Exception as e:
             raise ZeroCodeAPIError(f"Unexpected error: {e!s}") from e
 
     def init_session(self) -> None:
         """
-        Initializes the session and securely extracts the XSRF-TOKEN for future requests.
+        Initializes the session and securely extracts the XSRF-TOKEN for future
+        requests.
         """
         response = self.client.get("/services")
         self._handle_response(response)
@@ -60,7 +70,8 @@ class ZeroCodeClient:
         xsrf_token = self.client.cookies.get("XSRF-TOKEN")
         if not xsrf_token:
             raise ZeroCodeAPIError(
-                "Initialization failed: XSRF-TOKEN cookie not found in the response."
+                "Initialization failed: XSRF-TOKEN cookie not found in the "
+                "response."
             )
 
         # Add the token to default headers for all subsequent calls
@@ -76,9 +87,12 @@ class ZeroCodeClient:
         data = self._handle_response(response)
         return SearchResponse.model_validate(data)
 
-    def get_enterprises_with_comune(self, comune_id: int) -> list[ProvinceEnterprisesResponse]:
+    def get_enterprises_with_comune(
+        self, comune_id: int
+    ) -> list[ProvinceEnterprisesResponse]:
         """
-        Retrieve details of enterprises/facilities operating in a specific Comune.
+        Retrieve details of enterprises/facilities operating in a specific
+        Comune.
         """
         response = self.client.get(f"/enterprises-with-comune/{comune_id}")
 
@@ -95,13 +109,17 @@ class ZeroCodeClient:
         data = self._handle_response(response)
         return CalendarResponse.model_validate(data)
 
-    def get_availability(self, request: AvailabilityRequest) -> AvailabilityResponse:
+    def get_availability(
+        self, request: AvailabilityRequest
+    ) -> AvailabilityResponse:
         """
         Check exact time slots available for a specified day.
         """
         # Exclude defaults/nones and dump to standard JSON structure
         # Pydantic `date` parses automatically to 'YYYY-MM-DD'
-        payload = request.model_dump(by_alias=True, exclude_none=True, mode="json")
+        payload = request.model_dump(
+            by_alias=True, exclude_none=True, mode="json"
+        )
         response = self.client.post("/disponibilita", json=payload)
 
         data = self._handle_response(response)
@@ -128,7 +146,8 @@ class ZeroCodeClient:
 
     def download_memo(self, activation_key: str, file_path: str | Path) -> None:
         """
-        Downloads the PDF memo of the reservation and saves it to the specified local path.
+        Downloads the PDF memo of the reservation and saves it to the specified
+        local path.
         """
         response = self.client.get(f"/memo/{activation_key}")
 

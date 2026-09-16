@@ -21,27 +21,36 @@ def cerca_appuntamenti_per_area(
     livelloSfogliamentoAree: int | None = None,
     cf: str | None = None,
 ) -> tuple[Area | None, list[Appuntamento]]:
-    logger.info(f"cerca_appuntamenti_per_area(livelloSfogliamentoAree={livelloSfogliamentoAree})")
-    data: RootResponse[GetListaDisponibilitaPostResponse] = client.get_lista_disponibilita(
-        GetListaDisponibilitaPostRequest(
-            calcoloOrari="ORARI_PRIMO_ORARIO",
-            calcoloAppuntamenti="APP_DISP_UNO_PER_STRUTTURA",
-            listaPrescrizioni=listaPrescrizioni,
-            livelloSfogliamentoAree=livelloSfogliamentoAree,
-            tipo="S" if livelloSfogliamentoAree else "R",
-            cf=cf,
+    logger.info(
+        f"cerca_appuntamenti_per_area(livelloSfogliamentoAree={livelloSfogliamentoAree})"
+    )
+    data: RootResponse[GetListaDisponibilitaPostResponse] = (
+        client.get_lista_disponibilita(
+            GetListaDisponibilitaPostRequest(
+                calcoloOrari="ORARI_PRIMO_ORARIO",
+                calcoloAppuntamenti="APP_DISP_UNO_PER_STRUTTURA",
+                listaPrescrizioni=listaPrescrizioni,
+                livelloSfogliamentoAree=livelloSfogliamentoAree,
+                tipo="S" if livelloSfogliamentoAree else "R",
+                cf=cf,
+            )
         )
     )
 
     if not data.message or data.message.level != "SUCCESS":
-        raise RuntimeError(data.message.description if data.message else "Unknown error")
+        raise RuntimeError(
+            data.message.description if data.message else "Unknown error"
+        )
 
     if not data.response:
         raise RuntimeError("No server response")
 
     logger.debug(pprint.pformat(data.response.model_dump()))
 
-    if not data.response.listaAppuntamenti or not data.response.listaAppuntamenti.appuntamento:
+    if (
+        not data.response.listaAppuntamenti
+        or not data.response.listaAppuntamenti.appuntamento
+    ):
         raise RuntimeError("No appointment available")
 
     if not data.response.sfogliamentoAree:
@@ -74,21 +83,32 @@ def cerca_appuntamenti(
     )
 
     if not data.message or data.message.level != "SUCCESS":
-        raise RuntimeError(data.message.description if data.message else "Unknown error")
+        raise RuntimeError(
+            data.message.description if data.message else "Unknown error"
+        )
 
     if not data.response:
         raise RuntimeError("No server response")
 
     logger.debug(pprint.pformat(data.response.model_dump()))
 
-    if not data.response.listaPrescrizioni or not data.response.listaPrescrizioni.prescrizione:
+    if (
+        not data.response.listaPrescrizioni
+        or not data.response.listaPrescrizioni.prescrizione
+    ):
         raise RuntimeError("No prescription available")
 
-    paziente_cf = data.response.paziente.codiceFiscale if data.response.paziente else None
+    paziente_cf = (
+        data.response.paziente.codiceFiscale if data.response.paziente else None
+    )
     successiva = (
         None
         if single_area
-        else Area(livello=2147483647, codice="ALL", descrizione="Area fittizia di ultimo livello")
+        else Area(
+            livello=2147483647,
+            codice="ALL",
+            descrizione="Area fittizia di ultimo livello",
+        )
     )  # set this to None to cycle all areas one by one
     while True:
         successiva, appuntamenti = cerca_appuntamenti_per_area(

@@ -26,8 +26,12 @@ class SearchUserData(CamelCaseModel):
 class Prestazione(CamelCaseModel):
     id: str | None = None
     codice: str | None = None
-    codice_catalogo_regionale: str | None = Field(None, alias="codiceCatalogoRegionale")
-    codice_nomenclatore_regionale: str | None = Field(None, alias="codiceNomenclatoreRegionale")
+    codice_catalogo_regionale: str | None = Field(
+        None, alias="codiceCatalogoRegionale"
+    )
+    codice_nomenclatore_regionale: str | None = Field(
+        None, alias="codiceNomenclatoreRegionale"
+    )
     descrizione_nomenclatore_regionale: str | None = Field(
         None, alias="descrizioneNomenclatoreRegionale"
     )

@@ -1,0 +1,49 @@
+[project]
+name = "toscana_sanita"
+version = "1.0.0"
+description = "Toscana Sanità integration for Home Assistant"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "httpx>=0.28.1",
+    "pydantic>=2.13.5",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.3.0",
+    "ty>=0.0.48",
+    "homeassistant>=0.16.1",
+    "voluptuous>=0.16.0",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 80
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "A"]
+ignore = []
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ty.environment]
+python-version = "3.11"
+root = ["custom_components"]
+
+[tool.ty.src]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.*",
+    "build",
+    "dist",
+    ".venv",
+    "deps"
+]

@@ -38,7 +38,9 @@ def search(
                 if filters.filter_comuni(comune.comune):
                     for enterprise in comune.enterprises:
                         if enterprise.disponibilita > 0:
-                            calendar_res = client.get_calendar(enterprise.sys_id)
+                            calendar_res = client.get_calendar(
+                                enterprise.sys_id
+                            )
                             for availability in calendar_res.available_days:
                                 avail_req = AvailabilityRequest(
                                     day=availability.day, timeDelay="06:00"
@@ -49,16 +51,24 @@ def search(
                                         yield (enterprise, availability, item)
 
 
-def reserve(client: ZeroCodeClient, item: QueueRemoteItem) -> ReservationResponse:
+def reserve(
+    client: ZeroCodeClient, item: QueueRemoteItem
+) -> ReservationResponse:
     client.lock(item.queue_remote_id)
-    reserve_req = ReservationRequest(time=item.time, queue_remote_id=item.queue_remote_id)
+    reserve_req = ReservationRequest(
+        time=item.time, queue_remote_id=item.queue_remote_id
+    )
     reserve_res = client.reserve(reserve_req)
     return reserve_res
 
 
 def download_memo(
-    client: ZeroCodeClient, reservation: ReservationResponse, download_dir: Path | None = None
+    client: ZeroCodeClient,
+    reservation: ReservationResponse,
+    download_dir: Path | None = None,
 ) -> Path:
-    memo_path = (download_dir or Path.cwd()) / f"{reservation.number.replace(' ', '_')}_memo.pdf"
+    memo_path = (
+        download_dir or Path.cwd()
+    ) / f"{reservation.number.replace(' ', '_')}_memo.pdf"
     client.download_memo(reservation.activation_key, memo_path)
     return memo_path

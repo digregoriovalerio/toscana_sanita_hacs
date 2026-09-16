@@ -1,4 +1,5 @@
 """Toscana Sanità integration for Home Assistant."""
+
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
@@ -45,30 +46,44 @@ class Entry:
     def from_cup_online_data(data: dict[str, Any]) -> "Entry":
         place = data["unita"]["sede"]
         start_time = datetime.strptime(
-            f'{data["dataAppuntamento"]} {data["oraAppuntamento"]}',
+            f"{data['dataAppuntamento']} {data['oraAppuntamento']}",
             "%Y%m%d %H:%M",
         ).replace(tzinfo=ZoneInfo("Europe/Rome"))
         return Entry(
-            uid = f"{place['idSede']} {start_time}",
-            name = place["descSede"],
-            address = f'{place["indirizzoSede"]} - {place["capSede"]}, {place["nomeComuneSede"]} ({place["provinciaSede"]})',
-            start_time = start_time,
-            end_time = start_time + timedelta(minutes=data["durata"]),
-            notes = "\n".join(f"[{s['codiceNomenclatoreRegionale']}] {s['descrizioneNomenclatoreRegionale']}" for s in data.get("listaPrestazioni", []).get("prestazione", []))
+            uid=f"{place['idSede']} {start_time}",
+            name=place["descSede"],
+            address=(
+                f"{place['indirizzoSede']} - {place['capSede']}, "
+                f"{place['nomeComuneSede']} ({place['provinciaSede']})"
+            ),
+            start_time=start_time,
+            end_time=start_time + timedelta(minutes=data["durata"]),
+            notes="\n".join(
+                (
+                    f"[{s['codiceNomenclatoreRegionale']}] "
+                    f"{s['descrizioneNomenclatoreRegionale']}"
+                )
+                for s in data.get("listaPrestazioni", []).get("prestazione", [])
+            ),
         )
 
     @staticmethod
     def from_zerocode_data(data: dict[str, Any]) -> "Entry":
         start_time = datetime.strptime(
-            f'{data["availability"]["day"]} {data["queue_remote_item"]["time"]}',
+            f"{data['availability']['day']} "
+            f"{data['queue_remote_item']['time']}",
             "%Y-%m-%d %H:%M",
         ).replace(tzinfo=ZoneInfo("Europe/Rome"))
         return Entry(
-            uid = f"{data['enterprise']['sys_id']} {start_time}",
-            name = data["enterprise"]["title_enterprise"],
-            address = f'{data["enterprise"]["address"]} - {data["enterprise"]["provincia"]}, {data["enterprise"]["regione"]}',
-            start_time = start_time,
-            end_time = start_time + timedelta(minutes=30)
+            uid=f"{data['enterprise']['sys_id']} {start_time}",
+            name=data["enterprise"]["title_enterprise"],
+            address=(
+                f"{data['enterprise']['address']} - "
+                f"{data['enterprise']['provincia']}, "
+                f"{data['enterprise']['regione']}"
+            ),
+            start_time=start_time,
+            end_time=start_time + timedelta(minutes=30),
         )
 
     @staticmethod
@@ -93,9 +108,7 @@ class Entry:
         )
 
 
-async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry
-) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Toscana Sanità API from a config entry.
 
     Args:
@@ -118,27 +131,36 @@ async def async_setup_entry(
         if service == STEP_ZEROCODE:
 
             def _fetch_zerocode():
-                request = SearchRequest(tax_code=cf, nre=nre, phone_number=phone)
+                request = SearchRequest(
+                    tax_code=cf, nre=nre, phone_number=phone
+                )
                 filters = SearchFilters()
                 with ZeroCodeClient() as client:
-                    return [Entry.from_data({
-                        CONF_DATA: {
-                            "enterprise": e.model_dump(),
-                            "availability": a.model_dump(),
-                            "queue_remote_item": i.model_dump(),
-                        },
-                        CONF_SERVICE: service
-                    }).to_calendar_event() for e, a, i in search(client, request, filters)]
+                    return [
+                        Entry.from_data(
+                            {
+                                CONF_DATA: {
+                                    "enterprise": e.model_dump(),
+                                    "availability": a.model_dump(),
+                                    "queue_remote_item": i.model_dump(),
+                                },
+                                CONF_SERVICE: service,
+                            }
+                        ).to_calendar_event()
+                        for e, a, i in search(client, request, filters)
+                    ]
 
             results = await hass.async_add_executor_job(_fetch_zerocode)
 
         elif service == STEP_CUP_ONLINE:
 
             def _fetch_cup_online():
-                return [Entry.from_data({
-                    CONF_DATA: a.model_dump(),
-                    CONF_SERVICE: service
-                }).to_calendar_event() for a in cerca_appuntamenti(cf, nre, team)]
+                return [
+                    Entry.from_data(
+                        {CONF_DATA: a.model_dump(), CONF_SERVICE: service}
+                    ).to_calendar_event()
+                    for a in cerca_appuntamenti(cf, nre, team)
+                ]
 
             results = await hass.async_add_executor_job(_fetch_cup_online)
 
@@ -183,9 +205,7 @@ async def async_setup_entry(
     return True
 
 
-async def async_unload_entry(
-    hass: HomeAssistant, entry: ConfigEntry
-) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry and clean up resources.
 
     Args:
@@ -196,7 +216,7 @@ async def async_unload_entry(
         True if unload was successful, False otherwise.
     """
     result = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    
+
     if result:
         hass.data[DOMAIN].pop(entry.entry_id)
         if not hass.data[DOMAIN]:

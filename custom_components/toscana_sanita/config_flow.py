@@ -1,4 +1,5 @@
 """Config flow for the Toscana Sanità integration."""
+
 from typing import Any
 
 import voluptuous as vol
@@ -31,12 +32,8 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_SERVICE, default=STEP_ZEROCODE): SelectSelector(
             SelectSelectorConfig(
                 options=[
-                    SelectOptionDict(
-                        value=STEP_ZEROCODE, label="ZeroCode"
-                    ),
-                    SelectOptionDict(
-                        value=STEP_CUP_ONLINE, label="CUP Online"
-                    ),
+                    SelectOptionDict(value=STEP_ZEROCODE, label="ZeroCode"),
+                    SelectOptionDict(value=STEP_CUP_ONLINE, label="CUP Online"),
                 ],
                 mode=SelectSelectorMode.LIST,
             )
@@ -66,7 +63,9 @@ STEP_CUP_ONLINE_DATA_SCHEMA = vol.Schema(
             TextSelectorConfig(type=TextSelectorType.TEXT)
         ),
         vol.Required(CONF_NRE): TextSelector(
-            TextSelectorConfig(type=TextSelectorType.TEXT)  # TODO must be a list
+            TextSelectorConfig(
+                type=TextSelectorType.TEXT
+            )  # TODO must be a list
         ),
         vol.Required(CONF_TEAM): TextSelector(
             TextSelectorConfig(type=TextSelectorType.TEXT)
@@ -83,6 +82,7 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
     """
 
     VERSION = 1
+
     def __init__(self) -> None:
         """Initialize flow state to hold data across steps."""
         self._data: dict[str, Any] = {}
@@ -92,7 +92,8 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Handle the initial user setup step.
 
-        This step prompts the user for choosing between ZeroCode or CUP Online services.
+        This step prompts the user for choosing between ZeroCode or CUP Online
+        services.
 
         Args:
             user_input: Dictionary containing the choice from the form.
@@ -115,22 +116,20 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
                 raise ValueError(user_input[CONF_SERVICE])
         LOGGER.debug(f"Step {STEP_USER} terminated with form")
         return self.async_show_form(
-            step_id=STEP_USER,
-            data_schema=STEP_USER_DATA_SCHEMA,
-            errors=errors
+            step_id=STEP_USER, data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
-
 
     async def async_step_zerocode(
         self, user_input: dict[str, str] | None = None
     ) -> ConfigFlowResult:
         """Handle the initial user setup step.
 
-        This step prompts the user for their Codice Fiscale, NRE and telephone number,
-        then creates a config entry.
+        This step prompts the user for their Codice Fiscale, NRE and telephone
+        number, then creates a config entry.
 
         Args:
-            user_input: Dictionary containing Codice Fiscale, NRE and telephone number from the form.
+            user_input: Dictionary containing Codice Fiscale, NRE and telephone
+            number from the form.
 
         Returns:
             A config flow result with either the entry creation or the form.
@@ -141,8 +140,12 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
             self._data.update(user_input)
             await self.async_set_unique_id(user_input[CONF_NRE])
             self._abort_if_unique_id_configured()
-            result = self.async_create_entry(title=user_input[CONF_NRE], data=self._data)
-            LOGGER.debug(f"Step {STEP_ZEROCODE} for '{user_input[CONF_NRE]}' terminated")
+            result = self.async_create_entry(
+                title=user_input[CONF_NRE], data=self._data
+            )
+            LOGGER.debug(
+                f"Step {STEP_ZEROCODE} for '{user_input[CONF_NRE]}' terminated"
+            )
             return result
 
         result = self.async_show_form(
@@ -159,11 +162,12 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Handle the initial user setup step.
 
-        This step prompts the user for their Codice Fiscale, NRE and TEAM number,
-        then creates a config entry.
+        This step prompts the user for their Codice Fiscale, NRE and TEAM
+        number, then creates a config entry.
 
         Args:
-            user_input: Dictionary containing Codice Fiscale, NRE and TEAM number from the form.
+            user_input: Dictionary containing Codice Fiscale, NRE and TEAM
+            number from the form.
 
         Returns:
             A config flow result with either the entry creation or the form.
@@ -174,8 +178,13 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
             self._data.update(user_input)
             await self.async_set_unique_id(user_input[CONF_NRE])
             self._abort_if_unique_id_configured()
-            result = self.async_create_entry(title=user_input[CONF_NRE], data=self._data)
-            LOGGER.debug(f"Step {STEP_CUP_ONLINE} for '{user_input[CONF_NRE]}' terminated")
+            result = self.async_create_entry(
+                title=user_input[CONF_NRE], data=self._data
+            )
+            LOGGER.debug(
+                f"Step {STEP_CUP_ONLINE} for '{user_input[CONF_NRE]}' "
+                "terminated"
+            )
             return result
 
         result = self.async_show_form(

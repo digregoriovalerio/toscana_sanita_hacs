@@ -6,8 +6,8 @@
     "@digregoriovalerio"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/digregoriovalerio/toscana_sanita",
-  "issue_tracker": "https://github.com/digregoriovalerio/toscana_sanita/issues",
+  "documentation": "https://github.com/digregoriovalerio/toscana_sanita_hacs",
+  "issue_tracker": "https://github.com/digregoriovalerio/toscana_sanita_hacs/issues",
   "iot_class": "cloud_polling",
   "loggers": [
     "toscana_sanita"
