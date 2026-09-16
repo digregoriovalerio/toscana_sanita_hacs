@@ -1,0 +1,17 @@
+{
+  "domain": "toscana_sanita",
+  "name": "Toscana Sanità",
+  "version": "1.0.0",
+  "codeowners": [
+    "@digregoriovalerio"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/digregoriovalerio/toscana_sanita",
+  "issue_tracker": "https://github.com/digregoriovalerio/toscana_sanita/issues",
+  "iot_class": "cloud_polling",
+  "loggers": [
+    "toscana_sanita"
+  ],
+  "requirements": [
+  ]
+}

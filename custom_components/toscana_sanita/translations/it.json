@@ -1,0 +1,31 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Seleziona Servizio",
+        "description": "Scegli il servizio che desideri configurare.",
+        "data": {
+          "service": "Servizio"
+        }
+      },
+      "zerocode": {
+        "title": "Configurazione ZeroCode",
+        "description": "Inserisci i dati per accedere a ZeroCode.",
+        "data": {
+          "cf": "Codice Fiscale",
+          "nre": "Numero Ricetta Elettronica (NRE)",
+          "phone": "Numero di Telefono"
+        }
+      },
+      "cup_online": {
+        "title": "Configurazione CUP Online",
+        "description": "Inserisci i dati per accedere a CUP Online.",
+        "data": {
+          "cf": "Codice Fiscale",
+          "nre": "Numero Ricetta Elettronica (NRE)",
+          "team": "Numero Tessera Sanitaria (TEAM)"
+        }
+      }
+    }
+  }
+}

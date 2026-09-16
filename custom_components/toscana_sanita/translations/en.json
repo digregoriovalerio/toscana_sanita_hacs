@@ -1,0 +1,31 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Select Service",
+        "description": "Choose the service you want to configure.",
+        "data": {
+          "service": "Service"
+        }
+      },
+      "zerocode": {
+        "title": "ZeroCode Configuration",
+        "description": "Enter your ZeroCode details.",
+        "data": {
+          "cf": "Fiscal Code (CF)",
+          "nre": "Recipe Number (NRE)",
+          "phone": "Phone Number"
+        }
+      },
+      "cup_online": {
+        "title": "CUP Online Configuration",
+        "description": "Enter your CUP Online details.",
+        "data": {
+          "cf": "Fiscal Code (CF)",
+          "nre": "Recipe Number (NRE)",
+          "team": "EHIC / TEAM Card"
+        }
+      }
+    }
+  }
+}
