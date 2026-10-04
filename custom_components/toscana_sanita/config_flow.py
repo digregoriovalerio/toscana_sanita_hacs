@@ -14,6 +14,7 @@ from homeassistant.helpers.selector import (
     TextSelectorType,
 )
 
+from .api import Platform
 from .const import (
     CONF_CF,
     CONF_NRE,
@@ -119,6 +120,59 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id=STEP_USER, data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
 
+    async def async_handle_platform_step(
+        self,
+        service: str,
+        schema: vol.Schema,
+        user_input: dict[str, str] | None = None,
+    ) -> ConfigFlowResult:
+        """Handle the platform setup step.
+
+        This step prompts with a schema, then creates a config entry.
+
+        Args:
+            service: the service exposed by the target platform.
+            user_input: Dictionary containing data from the form.
+
+        Returns:
+            A config flow result with either the entry creation or the form.
+        """
+        errors: dict[str, str] = {}
+        extras: dict[str, str] = {}
+
+        if user_input is not None:
+            try:
+                Platform.get(service).validate(
+                    user_input[CONF_CF],
+                    user_input[CONF_NRE],
+                    team=user_input.get(CONF_TEAM),
+                    phone=user_input.get(CONF_PHONE),
+                )
+                self._data.update(user_input)
+                await self.async_set_unique_id(user_input[CONF_NRE])
+                self._abort_if_unique_id_configured()
+                result = self.async_create_entry(
+                    title=user_input[CONF_NRE], data=self._data
+                )
+                LOGGER.debug(
+                    f"Step {service} for '{user_input[CONF_NRE]}' terminated"
+                )
+                return result
+            except Exception as e:
+                LOGGER.warning(str(e))
+                errors["base"] = "invalid_input"
+                extras["error_message"] = str(e)
+
+        result = self.async_show_form(
+            step_id=service,
+            data_schema=schema,
+            errors=errors,
+            description_placeholders=extras,
+        )
+
+        LOGGER.debug(f"Step {service} terminated with form")
+        return result
+
     async def async_step_zerocode(
         self, user_input: dict[str, str] | None = None
     ) -> ConfigFlowResult:
@@ -134,28 +188,9 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
         Returns:
             A config flow result with either the entry creation or the form.
         """
-        errors: dict[str, str] = {}
-
-        if user_input is not None:
-            self._data.update(user_input)
-            await self.async_set_unique_id(user_input[CONF_NRE])
-            self._abort_if_unique_id_configured()
-            result = self.async_create_entry(
-                title=user_input[CONF_NRE], data=self._data
-            )
-            LOGGER.debug(
-                f"Step {STEP_ZEROCODE} for '{user_input[CONF_NRE]}' terminated"
-            )
-            return result
-
-        result = self.async_show_form(
-            step_id=STEP_ZEROCODE,
-            data_schema=STEP_ZEROCODE_DATA_SCHEMA,
-            errors=errors,
+        return await self.async_handle_platform_step(
+            STEP_ZEROCODE, STEP_ZEROCODE_DATA_SCHEMA, user_input
         )
-
-        LOGGER.debug(f"Step {STEP_ZEROCODE} terminated with form")
-        return result
 
     async def async_step_cup_online(
         self, user_input: dict[str, Any] | None = None
@@ -172,26 +207,6 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
         Returns:
             A config flow result with either the entry creation or the form.
         """
-        errors: dict[str, str] = {}
-
-        if user_input is not None:
-            self._data.update(user_input)
-            await self.async_set_unique_id(user_input[CONF_NRE])
-            self._abort_if_unique_id_configured()
-            result = self.async_create_entry(
-                title=user_input[CONF_NRE], data=self._data
-            )
-            LOGGER.debug(
-                f"Step {STEP_CUP_ONLINE} for '{user_input[CONF_NRE]}' "
-                "terminated"
-            )
-            return result
-
-        result = self.async_show_form(
-            step_id=STEP_CUP_ONLINE,
-            data_schema=STEP_CUP_ONLINE_DATA_SCHEMA,
-            errors=errors,
+        return await self.async_handle_platform_step(
+            STEP_CUP_ONLINE, STEP_CUP_ONLINE_DATA_SCHEMA, user_input
         )
-
-        LOGGER.debug(f"Step {STEP_CUP_ONLINE} terminated with form")
-        return result

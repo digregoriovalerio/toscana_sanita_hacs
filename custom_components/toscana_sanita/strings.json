@@ -26,6 +26,9 @@
           "team": "Tessera Sanitaria (TEAM)"
         }
       }
+    },
+    "error": {
+      "invalid_input": "Dati inseriti non validi. {error_message}"
     }
   }
 }

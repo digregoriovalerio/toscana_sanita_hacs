@@ -26,6 +26,9 @@
           "team": "EHIC / TEAM Card"
         }
       }
+    },
+    "error": {
+      "invalid_input": "Invalid input data. {error_message}"
     }
   }
 }
