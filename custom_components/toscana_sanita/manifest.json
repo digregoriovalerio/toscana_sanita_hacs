@@ -1,7 +1,7 @@
 {
   "domain": "toscana_sanita",
   "name": "Toscana Sanità",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "codeowners": [
     "@digregoriovalerio"
   ],

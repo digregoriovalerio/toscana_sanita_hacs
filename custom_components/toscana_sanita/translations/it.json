@@ -8,27 +8,44 @@
           "service": "Servizio"
         }
       },
-      "zerocode": {
-        "title": "Configurazione ZeroCode",
-        "description": "Inserisci i dati per accedere a ZeroCode.",
+      "service": {
+        "title": "Configurazione Servizio",
+        "description": "Inserisci i dati per accedere al servizio.",
         "data": {
           "cf": "Codice Fiscale",
           "nre": "Numero Ricetta Elettronica (NRE)",
-          "phone": "Numero di Telefono"
-        }
-      },
-      "cup_online": {
-        "title": "Configurazione CUP Online",
-        "description": "Inserisci i dati per accedere a CUP Online.",
-        "data": {
-          "cf": "Codice Fiscale",
-          "nre": "Numero Ricetta Elettronica (NRE)",
-          "team": "Numero Tessera Sanitaria (TEAM)"
+          "phone": "Numero di Telefono",
+          "team": "Tessera Sanitaria (TEAM)"
         }
       }
     },
     "error": {
       "invalid_input": "Dati inseriti non validi. {error_message}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configura Servizio",
+        "description": "Inserisci i dati per accedere al servizio.",
+        "data": {
+          "cf": "Codice Fiscale",
+          "nre": "Numero Ricetta Elettronica (NRE)",
+          "phone": "Numero di Telefono",
+          "team": "Tessera Sanitaria (TEAM)"
+        }
+      }
+    },
+    "error": {
+      "invalid_input": "Dati inseriti non validi. {error_message}"
+    }
+  },
+  "selector": {
+    "service": {
+      "options": {
+        "zerocode": "ZeroCode",
+        "cup_online": "CUP Online"
+      }
     }
   }
 }

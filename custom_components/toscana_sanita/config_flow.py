@@ -1,9 +1,15 @@
 """Config flow for the Toscana Sanità integration."""
 
+import asyncio
 from typing import Any
 
 import voluptuous as vol
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
+from homeassistant.core import callback
 from homeassistant.helpers.selector import (
     SelectOptionDict,
     SelectSelector,
@@ -23,56 +29,69 @@ from .const import (
     CONF_TEAM,
     DOMAIN,
     LOGGER,
-    STEP_CUP_ONLINE,
+    SERVICE_CUP_ONLINE,
+    SERVICE_ZEROCODE,
+    STEP_INIT,
+    STEP_SERVICE,
     STEP_USER,
-    STEP_ZEROCODE,
 )
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_SERVICE, default=STEP_ZEROCODE): SelectSelector(
+        vol.Required(CONF_SERVICE, default=SERVICE_ZEROCODE): SelectSelector(
             SelectSelectorConfig(
                 options=[
-                    SelectOptionDict(value=STEP_ZEROCODE, label="ZeroCode"),
-                    SelectOptionDict(value=STEP_CUP_ONLINE, label="CUP Online"),
+                    SelectOptionDict(value=SERVICE_ZEROCODE, label="ZeroCode"),
+                    SelectOptionDict(
+                        value=SERVICE_CUP_ONLINE, label="CUP Online"
+                    ),
                 ],
                 mode=SelectSelectorMode.LIST,
+                translation_key=CONF_SERVICE,
             )
         ),
     }
 )
 
-# TODO handle filter
-STEP_ZEROCODE_DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_CF): TextSelector(
-            TextSelectorConfig(type=TextSelectorType.TEXT)
-        ),
-        vol.Required(CONF_NRE): TextSelector(
-            TextSelectorConfig(type=TextSelectorType.TEXT)
-        ),
-        vol.Required(CONF_PHONE): TextSelector(
-            TextSelectorConfig(type=TextSelectorType.TEL)
-        ),
-    }
-)
 
-# TODO handle filter
-STEP_CUP_ONLINE_DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_CF): TextSelector(
-            TextSelectorConfig(type=TextSelectorType.TEXT)
-        ),
-        vol.Required(CONF_NRE): TextSelector(
-            TextSelectorConfig(
-                type=TextSelectorType.TEXT
-            )  # TODO must be a list
-        ),
-        vol.Required(CONF_TEAM): TextSelector(
-            TextSelectorConfig(type=TextSelectorType.TEXT)
-        ),
-    }
-)
+def get_service_schema(
+    service: str, data: dict[str, Any] | None = None
+) -> vol.Schema:
+    data = data or {}
+    if service == SERVICE_ZEROCODE:
+        # TODO handle filtering
+        return vol.Schema(
+            {
+                vol.Required(
+                    CONF_CF, default=data.get(CONF_CF, vol.UNDEFINED)
+                ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+                vol.Required(
+                    CONF_NRE, default=data.get(CONF_NRE, vol.UNDEFINED)
+                ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+                vol.Required(
+                    CONF_PHONE, default=data.get(CONF_PHONE, vol.UNDEFINED)
+                ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEL)),
+            }
+        )
+    elif service == SERVICE_CUP_ONLINE:
+        # TODO handle filtering
+        # TODO nre must be a list
+        return vol.Schema(
+            {
+                vol.Required(
+                    CONF_CF, default=data.get(CONF_CF, vol.UNDEFINED)
+                ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+                vol.Required(
+                    CONF_NRE, default=data.get(CONF_NRE, vol.UNDEFINED)
+                ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+                vol.Required(
+                    CONF_TEAM, default=data.get(CONF_TEAM, vol.UNDEFINED)
+                ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+            }
+        )
+    else:
+        LOGGER.error(f"Unknown value: {service}")
+        raise ValueError(service)
 
 
 class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -88,8 +107,14 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
         """Initialize flow state to hold data across steps."""
         self._data: dict[str, Any] = {}
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry) -> OptionsFlow:
+        """Get the options flow for this handler."""
+        return ToscanaSanitaOptionsFlowHandler(config_entry)
+
     async def async_step_user(
-        self, user_input: dict[str, str] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the initial user setup step.
 
@@ -108,25 +133,23 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             self._data.update(user_input)
             LOGGER.debug(f"Step {STEP_USER} choice: {user_input[CONF_SERVICE]}")
-            if user_input[CONF_SERVICE] == STEP_ZEROCODE:
-                return await self.async_step_zerocode()
-            elif user_input[CONF_SERVICE] == STEP_CUP_ONLINE:
-                return await self.async_step_cup_online()
-            else:
-                LOGGER.error(f"Unknown value: {user_input[CONF_SERVICE]}")
-                raise ValueError(user_input[CONF_SERVICE])
+            if user_input[CONF_SERVICE] in (
+                SERVICE_ZEROCODE,
+                SERVICE_CUP_ONLINE,
+            ):
+                return await self.async_step_service()
+
+            LOGGER.error(f"Unknown value: {user_input[CONF_SERVICE]}")
+            raise ValueError(user_input[CONF_SERVICE])
         LOGGER.debug(f"Step {STEP_USER} terminated with form")
         return self.async_show_form(
             step_id=STEP_USER, data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
 
-    async def async_handle_platform_step(
-        self,
-        service: str,
-        schema: vol.Schema,
-        user_input: dict[str, str] | None = None,
+    async def async_step_service(
+        self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle the platform setup step.
+        """Handle the service setup step.
 
         This step prompts with a schema, then creates a config entry.
 
@@ -140,9 +163,16 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         extras: dict[str, str] = {}
 
+        service = self._data.get(CONF_SERVICE)
+        if not service:
+            LOGGER.error("Unknown service")
+            raise ValueError("Unknown service")
+
         if user_input is not None:
             try:
-                Platform.get(service).validate(
+                platform = Platform.get(service)
+                await asyncio.to_thread(
+                    platform.validate,
                     user_input[CONF_CF],
                     user_input[CONF_NRE],
                     team=user_input.get(CONF_TEAM),
@@ -164,8 +194,8 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
                 extras["error_message"] = str(e)
 
         result = self.async_show_form(
-            step_id=service,
-            data_schema=schema,
+            step_id=STEP_SERVICE,
+            data_schema=get_service_schema(service, self._data),
             errors=errors,
             description_placeholders=extras,
         )
@@ -173,40 +203,49 @@ class ToscanaSanitaConfigFlow(ConfigFlow, domain=DOMAIN):
         LOGGER.debug(f"Step {service} terminated with form")
         return result
 
-    async def async_step_zerocode(
-        self, user_input: dict[str, str] | None = None
-    ) -> ConfigFlowResult:
-        """Handle the initial user setup step.
 
-        This step prompts the user for their Codice Fiscale, NRE and telephone
-        number, then creates a config entry.
+class ToscanaSanitaOptionsFlowHandler(OptionsFlow):
+    """Handle options flow for Toscana Sanità integration."""
 
-        Args:
-            user_input: Dictionary containing Codice Fiscale, NRE and telephone
-            number from the form.
+    def __init__(self, config_entry) -> None:
+        """Initialize options flow."""
+        self._config_entry = config_entry
 
-        Returns:
-            A config flow result with either the entry creation or the form.
-        """
-        return await self.async_handle_platform_step(
-            STEP_ZEROCODE, STEP_ZEROCODE_DATA_SCHEMA, user_input
-        )
-
-    async def async_step_cup_online(
+    async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle the initial user setup step.
+        """Manage the options for the configuration entry."""
+        errors: dict[str, str] = {}
+        extras: dict[str, str] = {}
 
-        This step prompts the user for their Codice Fiscale, NRE and TEAM
-        number, then creates a config entry.
+        current_data = {**self._config_entry.data, **self._config_entry.options}
+        service = current_data.get(CONF_SERVICE)
+        if not service:
+            LOGGER.error("Unknown service")
+            raise ValueError("Unknown service")
 
-        Args:
-            user_input: Dictionary containing Codice Fiscale, NRE and TEAM
-            number from the form.
+        if user_input is not None:
+            try:
+                user_input[CONF_SERVICE] = service
+                platform = Platform.get(service)
+                await asyncio.to_thread(
+                    platform.validate,
+                    user_input[CONF_CF],
+                    user_input[CONF_NRE],
+                    team=user_input.get(CONF_TEAM),
+                    phone=user_input.get(CONF_PHONE),
+                )
+                return self.async_create_entry(
+                    title=user_input[CONF_NRE], data=user_input
+                )
+            except Exception as e:
+                LOGGER.warning(str(e))
+                errors["base"] = "invalid_input"
+                extras["error_message"] = str(e)
 
-        Returns:
-            A config flow result with either the entry creation or the form.
-        """
-        return await self.async_handle_platform_step(
-            STEP_CUP_ONLINE, STEP_CUP_ONLINE_DATA_SCHEMA, user_input
+        return self.async_show_form(
+            step_id=STEP_INIT,
+            data_schema=get_service_schema(service, current_data),
+            errors=errors,
+            description_placeholders=extras,
         )

@@ -8,27 +8,44 @@
           "service": "Service"
         }
       },
-      "zerocode": {
-        "title": "ZeroCode Configuration",
-        "description": "Enter your ZeroCode details.",
+      "service": {
+        "title": "Service Configuration",
+        "description": "Enter your service details.",
         "data": {
           "cf": "Fiscal Code (CF)",
           "nre": "Recipe Number (NRE)",
-          "phone": "Phone Number"
-        }
-      },
-      "cup_online": {
-        "title": "CUP Online Configuration",
-        "description": "Enter your CUP Online details.",
-        "data": {
-          "cf": "Fiscal Code (CF)",
-          "nre": "Recipe Number (NRE)",
+          "phone": "Phone Number",
           "team": "EHIC / TEAM Card"
         }
       }
     },
     "error": {
       "invalid_input": "Invalid input data. {error_message}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Service Configuration",
+        "description": "Enter your service details.",
+        "data": {
+          "cf": "Fiscal Code (CF)",
+          "nre": "Recipe Number (NRE)",
+          "phone": "Phone Number",
+          "team": "EHIC / TEAM Card"
+        }
+      }
+    },
+    "error": {
+      "invalid_input": "Invalid input data. {error_message}"
+    }
+  },
+  "selector": {
+    "service": {
+      "options": {
+        "zerocode": "ZeroCode",
+        "cup_online": "CUP Online"
+      }
     }
   }
 }

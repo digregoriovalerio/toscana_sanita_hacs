@@ -19,8 +19,11 @@ CONF_SERVICE = "service"
 CONF_DATA = "data"
 
 STEP_USER = "user"
-STEP_ZEROCODE = "zerocode"
-STEP_CUP_ONLINE = "cup_online"
+STEP_SERVICE = "service"
+STEP_INIT = "init"
+
+SERVICE_ZEROCODE = "zerocode"
+SERVICE_CUP_ONLINE = "cup_online"
 
 EVENT_NEW_CALENDAR_EVENT = f"{DOMAIN}_new_calendar_event"
 

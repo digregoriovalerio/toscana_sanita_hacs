@@ -2,33 +2,50 @@
   "config": {
     "step": {
       "user": {
-        "title": "Seleziona Servizio",
-        "description": "Scegli il servizio che desideri configurare.",
+        "title": "Select Service",
+        "description": "Choose the service you want to configure.",
         "data": {
-          "service": "Servizio"
+          "service": "Service"
         }
       },
-      "zerocode": {
-        "title": "Configurazione ZeroCode",
-        "description": "Inserisci i dati per accedere a ZeroCode.",
+      "service": {
+        "title": "Service Configuration",
+        "description": "Enter your service details.",
         "data": {
-          "cf": "Codice Fiscale",
-          "nre": "Numero Ricetta Elettronica (NRE)",
-          "phone": "Numero di Telefono"
-        }
-      },
-      "cup_online": {
-        "title": "Configurazione CUP Online",
-        "description": "Inserisci i dati per accedere a CUP Online.",
-        "data": {
-          "cf": "Codice Fiscale",
-          "nre": "Numero Ricetta Elettronica (NRE)",
-          "team": "Tessera Sanitaria (TEAM)"
+          "cf": "Fiscal Code (CF)",
+          "nre": "Recipe Number (NRE)",
+          "phone": "Phone Number",
+          "team": "EHIC / TEAM Card"
         }
       }
     },
     "error": {
-      "invalid_input": "Dati inseriti non validi. {error_message}"
+      "invalid_input": "Invalid input data. {error_message}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Service Configuration",
+        "description": "Enter your service details.",
+        "data": {
+          "cf": "Fiscal Code (CF)",
+          "nre": "Recipe Number (NRE)",
+          "phone": "Phone Number",
+          "team": "EHIC / TEAM Card"
+        }
+      }
+    },
+    "error": {
+      "invalid_input": "Invalid input data. {error_message}"
+    }
+  },
+  "selector": {
+    "service": {
+      "options": {
+        "zerocode": "ZeroCode",
+        "cup_online": "CUP Online"
+      }
     }
   }
 }
