@@ -8,11 +8,7 @@ from zoneinfo import ZoneInfo
 
 from homeassistant.components.calendar import CalendarEvent
 
-from .const import (
-    LOGGER,
-    STEP_CUP_ONLINE,
-    STEP_ZEROCODE,
-)
+from .const import LOGGER, SERVICE_CUP_ONLINE, SERVICE_ZEROCODE
 from .cup.commands import cerca_appuntamenti
 from .zerocode.client import ZeroCodeClient
 from .zerocode.commands import SearchFilters, search
@@ -22,9 +18,9 @@ from .zerocode.data.search import SearchRequest
 class Platform(Protocol):
     @staticmethod
     def get(service: str) -> Platform:
-        if service == STEP_ZEROCODE:
+        if service == SERVICE_ZEROCODE:
             return Zerocode()
-        elif service == STEP_CUP_ONLINE:
+        elif service == SERVICE_CUP_ONLINE:
             return CUPOnline()
         else:
             LOGGER.error(f"Unknown value: {service}")
